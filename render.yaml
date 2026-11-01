@@ -1,0 +1,26 @@
+# Blueprint Render : le disque est éphémère, la session WhatsApp est donc stockée dans PostgreSQL.
+services:
+  - type: web
+    name: shadow-bot
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: shadow-bot-db
+          property: connectionString
+      - key: DATABASE_SSL
+        value: "true"
+      - key: OWNER
+        sync: false        # votre numéro, format international sans « + »
+      - key: WEB_PASSWORD
+        sync: false        # mot de passe de la page de connexion
+      - key: PREFIX
+        value: "."
+      - key: TZ
+        value: Africa/Abidjan
+
+databases:
+  - name: shadow-bot-db
+    plan: free
