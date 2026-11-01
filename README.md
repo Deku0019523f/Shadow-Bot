@@ -20,7 +20,7 @@ Tapez `.menu` dans WhatsApp pour voir les commandes. Écrire un plugin : voir [d
 
 ## Commandes
 
-189 commandes (modération, groupes, filtres, jeux, stickers, audio/vidéo, téléchargeurs, IA, outils, organisation, administration) : liste complète dans [docs/commands.md](docs/commands.md) (à générer avec `node scripts/docs.js`). Tapez `.menu` pour la voir dans WhatsApp, `.list` pour une liste compacte.
+189 commandes (modération, groupes, filtres, jeux, stickers, audio/vidéo, téléchargeurs, IA, outils, organisation, administration) : liste complète dans [docs/commands.md](docs/commands.md). Tapez `.menu` pour la voir dans WhatsApp, `.list` pour une liste compacte.
 
 Certaines commandes demandent des clés ou des binaires :
 
