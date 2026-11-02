@@ -2,19 +2,21 @@
 
 # Shadow Bot
 
-Bot WhatsApp modulaire en Node.js (Baileys) : système de plugins, modération de groupe, médias, IA, page web de connexion (QR code ou code de jumelage), stockage SQLite ou PostgreSQL.
+Bot WhatsApp modulaire en Node.js (Baileys) : système de plugins, modération de groupe, médias, IA, stockage SQLite ou PostgreSQL. **Multi-utilisateurs** : la page web est publique, chaque visiteur relie son propre compte WhatsApp (QR code ou code de jumelage) et obtient son propre bot, avec ses réglages et ses clés, séparés de ceux des autres.
 
 ## Démarrage rapide
 
 ```bash
 npm install
-cp .env.example .env     # puis éditer OWNER et WEB_PASSWORD
+cp .env.example .env     # puis éditer OWNER, WEB_PASSWORD, MAX_SESSIONS
 npm start
 ```
 
-Ouvrez `http://localhost:3000`, entrez le mot de passe, puis liez WhatsApp :
+Ouvrez `http://localhost:3000` : « Relier mon compte WhatsApp », puis
 - **QR code** : WhatsApp → Appareils connectés → Connecter un appareil → scanner.
 - **Code de jumelage** : saisissez votre numéro, puis entrez le code dans WhatsApp → Connecter avec le numéro de téléphone.
+
+Chaque utilisateur est propriétaire de **son** bot (le compte relié). Vous, l'hébergeur, définissez `OWNER` (votre numéro) pour garder les commandes serveur (`restart`, `update`, `plugin`…) et `WEB_PASSWORD` pour la section « Administration » de la page (liste et suppression des comptes). `MAX_SESSIONS` limite le nombre de comptes (chacun consomme de la mémoire). Sur Render, une base PostgreSQL (`DATABASE_URL`) est indispensable pour conserver les sessions.
 
 Tapez `.menu` dans WhatsApp pour voir les commandes. Écrire un plugin : voir [docs/plugin-api.md](docs/plugin-api.md). Plan du projet : [plan.md](plan.md).
 
@@ -34,7 +36,7 @@ Certaines commandes demandent des clés ou des binaires :
 | `movie` | `OMDB_API_KEY` |
 | `reminder` `task` `backup` `gupload` (Google) | `GOOGLE_CLIENT_ID/SECRET`, puis `.gauth` |
 
-Les clés peuvent aussi être posées depuis WhatsApp : `.setvar GEMINI_API_KEY = …` (le message est supprimé, la valeur est masquée dans `.allvar`).
+Aucune clé n'est exigée sur le serveur : chaque utilisateur pose les siennes depuis WhatsApp, `.setvar GEMINI_API_KEY = …` (le message est supprimé, la valeur est masquée dans `.allvar`). Elles ne servent qu'à son bot.
 
 Différences avec Levanter : pas d'API privée — les téléchargements passent par yt-dlp, `bing` utilise Gemini + recherche web, `gstatus` (statut de groupe) est expérimental, `restart`/`update` supposent un superviseur (PM2, Docker, Render) ou un dépôt git.
 

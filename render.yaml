@@ -13,9 +13,11 @@ services:
       - key: DATABASE_SSL
         value: "true"
       - key: OWNER
-        sync: false        # votre numéro, format international sans « + »
+        sync: false        # votre numéro d'hébergeur, format international sans « + »
       - key: WEB_PASSWORD
-        sync: false        # mot de passe de la page de connexion
+        sync: false        # mot de passe de la section Administration
+      - key: MAX_SESSIONS
+        value: "5"          # plan gratuit (512 Mo) : peu de comptes simultanés
       - key: PREFIX
         value: "."
       - key: TZ

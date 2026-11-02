@@ -1,4 +1,4 @@
-const { bot, db, find, store, utils, config } = require('../lib')
+const { bot, db, find, store, utils, state } = require('../lib')
 const { jidNum, norm, toJid, formatUptime } = utils
 
 // --- afk -------------------------------------------------------------------------------
@@ -103,7 +103,7 @@ bot({ on: 'message' }, async (m) => {
   if ((cfg.scope === 'gm' || cfg.scope === 'no-pm') && !m.isGroup) return
   const orig = store.get(m.jid, proto.key.id)
   if (!orig?.message || orig.key.fromMe) return
-  const dest = cfg.dest === 'g' ? m.jid : cfg.dest === 'p' ? toJid(config.OWNER[0]) : cfg.dest
+  const dest = cfg.dest === 'g' ? m.jid : cfg.dest === 'p' ? state.user : cfg.dest
   if (!dest) return
   const who = norm(orig.key.participant || orig.key.remoteJid)
   await m.sock.sendMessage(dest, { text: `🗑️ *Message supprimé*\n*Par :* @${jidNum(who)}\n*Chat :* ${m.isGroup ? m.jid : '@' + jidNum(m.jid)}`, mentions: [who] })
