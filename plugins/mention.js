@@ -36,7 +36,7 @@ bot(
 bot({ on: 'message' }, async (m) => {
   const cfg = get()
   if (!cfg?.enabled || m.fromMe || !m.mentioned.length) return
-  const mine = [m.sock.user?.id, m.sock.user?.lid, ...config.OWNER.map(toJid)].filter(Boolean).map(norm)
+  const mine = [m.sock.user?.id, m.sock.user?.lid].filter(Boolean).map(norm)
   if (!m.mentioned.some((j) => mine.includes(norm(j)))) return
 
   if (cfg.media) return m.sendMedia(Buffer.from(cfg.media.data, 'base64'), { type: cfg.media.type, caption: cfg.message })

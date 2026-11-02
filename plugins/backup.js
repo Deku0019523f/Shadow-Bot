@@ -35,7 +35,7 @@ bot({ name: 'backup', desc: 'Sauvegarde des réglages : backup now · backup res
         db.set(scope, k, v)
         n++
       }
-      return m.reply(`${n} réglages restaurés ✅ (redémarrez avec « restart » pour tout appliquer)`)
+      return m.reply(`${n} réglages restaurés ✅ (les réglages s'appliquent dès maintenant)`)
     } catch (e) {
       return m.reply(`❌ ${e.message}`)
     }

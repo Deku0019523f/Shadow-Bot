@@ -32,7 +32,7 @@ const norm = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 
 bot({ name: 'menu', aliases: ['help', 'aide'], desc: 'Affiche la liste des commandes (menu <catégorie>)', type: 'général' }, async (m, match, ctx) => {
   const disabled = ctx.db.get('global', 'disabled', [])
-  const visible = ctx.commands.filter((c) => !c.hidden)
+  const visible = ctx.commands.filter((c) => !c.hidden && (!c.platform || m.isOperator))
 
   // Regroupe les types équivalents (image/images, video/vidéo…) sous un même libellé
   const groups = new Map()
@@ -58,7 +58,7 @@ bot({ name: 'menu', aliases: ['help', 'aide'], desc: 'Affiche la liste des comma
     `┃ *Commandes* : ${visible.length}`,
     `┃ *Version* : ${config.VERSION}`,
     `┃ *Disponibilité* : ${utils.formatUptime(process.uptime())}`,
-    `╰━━━━━━━━━━━━━━━━━━━━╯`,
+    `╰━━━━━━━━━━━━━━━━━━━╯`,
   ].join('\n')
 
   const blocks = picked.map((g) => {
@@ -91,6 +91,6 @@ bot({ name: 'menu', aliases: ['help', 'aide'], desc: 'Affiche la liste des comma
 })
 
 bot({ name: 'list', desc: 'Liste compacte de toutes les commandes', type: 'général' }, async (m, match, ctx) => {
-  const names = ctx.commands.filter((c) => !c.hidden).map((c) => c.name).sort()
+  const names = ctx.commands.filter((c) => !c.hidden && (!c.platform || m.isOperator)).map((c) => c.name).sort()
   await m.reply(`*${names.length} commandes*\n\n${names.map((n, i) => `${i + 1}. ${n}`).join('\n')}`)
 })

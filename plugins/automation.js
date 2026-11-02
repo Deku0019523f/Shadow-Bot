@@ -1,11 +1,11 @@
 const { generateWAMessageContent, generateWAMessageFromContent } = require('@whiskeysockets/baileys')
-const { bot, db, config, utils } = require('../lib')
+const { bot, db, utils, state } = require('../lib')
 const schedule = require('../lib/schedule')
 const { norm, toJid, jidNum } = utils
 
 // Automatisations du compte : status · call · read · online · setstatus · scstatus · gstatus
 const cfg = (k, d) => db.get('global', k, d)
-const ownerJid = () => toJid(config.OWNER[0])
+const ownerJid = () => state.user // le compte relié (propriétaire de CE bot)
 const csv = (s) => s.split(/[\s,]+/).filter(Boolean).map((j) => (j.includes('@') ? j : toJid(j)))
 
 // --- status : vue automatique des statuts -------------------------------------------------
