@@ -9,12 +9,13 @@ module.exports = {
   // Préfixe des commandes (ex: ".ping")
   PREFIX: process.env.PREFIX || '.',
 
-  // Numéros propriétaires, séparés par des virgules, format international sans "+"
+  // Numéros « opérateur » (vous, qui hébergez le bot), séparés par des virgules, format international sans "+".
+  // Seul un compte relié avec l'un de ces numéros peut utiliser restart / update / plugin... Les autres utilisateurs
+  // sont propriétaires de LEUR bot uniquement.
   OWNER: (process.env.OWNER || '').split(',').map(digits).filter(Boolean),
 
-  // Optionnel : demande automatiquement un code de jumelage pour ce numéro au démarrage.
-  // (Sinon, tout se fait depuis la page web : QR code ou code de jumelage.)
-  PAIRING_NUMBER: digits(process.env.PAIRING_NUMBER),
+  // Nombre maximum de comptes WhatsApp pouvant être reliés en même temps (chaque session consomme de la mémoire)
+  MAX_SESSIONS: Number(process.env.MAX_SESSIONS) || 10,
 
   // "public" = tout le monde peut utiliser le bot, "private" = propriétaire seulement
   MODE: process.env.MODE === 'private' ? 'private' : 'public',
@@ -37,17 +38,16 @@ module.exports = {
   API_KEY: process.env.API_KEY || '',
   API_WEBHOOK_URL: process.env.API_WEBHOOK_URL || '',
 
-  // Clés optionnelles pour les commandes IA / services externes
-  KEYS: {
-    OPENAI: process.env.OPENAI_API_KEY || '',
-    GEMINI: process.env.GEMINI_API_KEY || '',
-    GROQ: process.env.GROQ_API_KEY || '',
-    OPENROUTER: process.env.OPENROUTER_API_KEY || '',
-    OPENWEATHER: process.env.OPENWEATHER_API_KEY || '',
-    NEWS: process.env.NEWS_API_KEY || '',
-    OMDB: process.env.OMDB_API_KEY || '',
-    REMOVEBG: process.env.REMOVEBG_API_KEY || '',
-    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
-    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || '',
-  },
+  // Clés optionnelles pour les commandes IA / services externes.
+  // Lues à la volée : chaque utilisateur peut définir les siennes avec « setvar » (propres à sa session).
+  KEYS: Object.defineProperties(
+    {},
+    Object.fromEntries(
+      Object.entries({
+        OPENAI: 'OPENAI_API_KEY', GEMINI: 'GEMINI_API_KEY', GROQ: 'GROQ_API_KEY', OPENROUTER: 'OPENROUTER_API_KEY',
+        OPENWEATHER: 'OPENWEATHER_API_KEY', NEWS: 'NEWS_API_KEY', OMDB: 'OMDB_API_KEY', REMOVEBG: 'REMOVEBG_API_KEY',
+        GOOGLE_CLIENT_ID: 'GOOGLE_CLIENT_ID', GOOGLE_CLIENT_SECRET: 'GOOGLE_CLIENT_SECRET',
+      }).map(([k, env]) => [k, { enumerable: true, get: () => process.env[env] || '' }])
+    )
+  ),
 }

@@ -6,20 +6,21 @@ async function main() {
 
   const driver = await db.init()
   console.log(`💾 Stockage : ${driver}`)
-  require('./lib/vars').apply() // variables définies avec setvar
+  require('./lib/env').install() // process.env propre à chaque utilisateur (setvar)
 
   const { loadPlugins, loadExternalPlugins } = require('./lib/loader')
   const plugins = loadPlugins()
   const external = loadExternalPlugins()
   console.log(`🧩 ${plugins.length} plugin(s) chargé(s)${external.length ? ` + ${external.length} externe(s)` : ''}`)
 
-  const connection = require('./lib/connection')
+  const sessions = require('./lib/sessions')
   // Le serveur web démarre en premier : les hébergeurs (Render...) exigent un port ouvert rapidement
   const server = require('./lib/web').startWeb()
-  await connection.start()
+  const restored = await sessions.restoreAll()
+  if (restored) console.log(`🔁 ${restored} compte(s) WhatsApp relancé(s)`)
 
   const shutdown = async () => {
-    await connection.close()
+    await sessions.closeAll()
     server.close()
     await db.close().catch(() => {})
     process.exit(0)
