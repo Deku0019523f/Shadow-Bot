@@ -7,6 +7,7 @@ const { EXTERNAL_DIR } = require('../lib/loader')
 
 // Administration du bot (propriétaire uniquement)
 const OWN = { type: 'bot', owner: true }
+const PLATFORM = { type: 'bot', owner: true, platform: true } // serveur : réservé à l'opérateur
 const sh = (cmd, args, opts = {}) => new Promise((resolve, reject) => execFile(cmd, args, { timeout: 180_000, cwd: path.join(__dirname, '..'), ...opts }, (e, out, err) => (e ? reject(new Error((err || e.message).trim().split('\n').pop())) : resolve(out.trim()))))
 
 // --- variables -------------------------------------------------------------------------------------------------
@@ -14,7 +15,8 @@ bot({ name: 'setvar', desc: 'Définit une variable (setvar CLE = valeur ; ex : s
   const i = match.indexOf('=')
   const key = match.slice(0, i).trim().toUpperCase()
   const value = match.slice(i + 1).trim()
-  if (i < 0 || !/^[A-Z][A-Z0-9_]*$/.test(key) || !value) return m.reply('Exemple : setvar CLE = valeur')
+  if (i < 0 || !/^[A-Z][A-Z0-9_]*$/.test(key) || !value) return m.reply('Exemple : setvar GEMINI_API_KEY = votre_clé')
+  if (!vars.isAllowed(key)) return m.reply(`⛔ Variable non modifiable.\n\n*Variables disponibles*\n${vars.ALLOWED.map((k) => `• ${k}`).join('\n')}`)
   vars.set(key, value)
   if (/KEY|TOKEN|SECRET|PASSWORD/.test(key)) await m.deleteMessage().catch(() => {}) // évite de laisser une clé dans le chat
   await m.send(`Nouvelle variable *${key}* définie : ${vars.mask(key, value)}`)
@@ -51,21 +53,21 @@ bot({ name: 'setprefix', desc: 'Change le préfixe (setprefix ! · setprefix off
 
 // --- processus -------------------------------------------------------------------------------------------------------
 const exitSoon = (code = 0) => setTimeout(() => process.exit(code), 1500)
-bot({ name: 'restart', aliases: ['reboot'], desc: 'Redémarre le bot (nécessite PM2, Docker, Render… qui relance le processus)', ...OWN }, async (m) => {
+bot({ name: 'restart', aliases: ['reboot'], desc: 'Redémarre le bot (nécessite PM2, Docker, Render… qui relance le processus)', ...PLATFORM }, async (m) => {
   await m.reply('_Redémarrage…_')
   exitSoon(0)
 })
-bot({ name: 'shutdown', desc: 'Arrête le bot (avec PM2 : pm2 stop ; sinon le processus se termine)', ...OWN }, async (m) => {
+bot({ name: 'shutdown', desc: 'Arrête le bot (avec PM2 : pm2 stop ; sinon le processus se termine)', ...PLATFORM }, async (m) => {
   await m.reply('_Arrêt…_')
   if (process.env.pm_id !== undefined) sh('pm2', ['stop', process.env.pm_id]).catch(() => exitSoon(0))
   else exitSoon(0)
 })
-bot({ name: 'dyno', aliases: ['sysinfo'], desc: 'État du serveur (uptime, mémoire, version)', ...OWN }, async (m) => {
+bot({ name: 'dyno', aliases: ['sysinfo'], desc: 'État du serveur (uptime, mémoire, version)', ...PLATFORM }, async (m) => {
   const os = require('os')
   await m.reply(
     [
       `*${config.BOT_NAME}* v${config.VERSION}`,
-      `*Statut WhatsApp :* ${state.status}`,
+      `*Comptes reliés :* ${require('../lib/sessions').count()} / ${config.MAX_SESSIONS}`,
       `*Uptime :* ${utils.formatUptime(process.uptime())}`,
       `*Mémoire :* ${utils.ramUsage()} / ${(os.totalmem() / 1073741824).toFixed(1)} Go`,
       `*Charge CPU :* ${os.loadavg().map((x) => x.toFixed(2)).join(' ')}`,
@@ -77,7 +79,7 @@ bot({ name: 'dyno', aliases: ['sysinfo'], desc: 'État du serveur (uptime, mémo
 
 // --- mise à jour (dépôt git) -----------------------------------------------------------------------------------------------
 const isGit = () => fs.existsSync(path.join(__dirname, '..', '.git'))
-bot({ name: 'update', desc: 'Vérifie les mises à jour git (update) · installe et redémarre (update now)', ...OWN }, async (m, match) => {
+bot({ name: 'update', desc: 'Vérifie les mises à jour git (update) · installe et redémarre (update now)', ...PLATFORM }, async (m, match) => {
   if (!isGit()) return m.reply('Ce déploiement n\'est pas un dépôt git (image Docker ?). Redéployez depuis votre dépôt pour mettre à jour.')
   try {
     if (match === 'now') {
@@ -99,7 +101,7 @@ bot({ name: 'update', desc: 'Vérifie les mises à jour git (update) · installe
 // --- plugins externes ----------------------------------------------------------------------------------------------------------
 const HOSTS = ['gist.github.com', 'gist.githubusercontent.com', 'raw.githubusercontent.com']
 const list = () => (fs.existsSync(EXTERNAL_DIR) ? fs.readdirSync(EXTERNAL_DIR).filter((f) => f.endsWith('.js')) : [])
-bot({ name: 'plugin', desc: 'Installe un plugin depuis un Gist/raw GitHub (plugin lien) · plugin list', ...OWN }, async (m, match) => {
+bot({ name: 'plugin', desc: 'Installe un plugin depuis un Gist/raw GitHub (plugin lien) · plugin list', ...PLATFORM }, async (m, match) => {
   if (!match || match === 'list') {
     const l = list()
     return m.reply(l.length ? `Plugins externes :\n${l.map((f) => `- ${f.replace(/\.js$/, '')}`).join('\n')}` : '> Exemple :\n- plugin <lien Gist>\n- plugin list\n\n_Aucun plugin externe installé._')
@@ -124,7 +126,7 @@ bot({ name: 'plugin', desc: 'Installe un plugin depuis un Gist/raw GitHub (plugi
     await m.reply(`❌ Plugin invalide : ${e.message}`)
   }
 })
-bot({ name: 'remove', desc: 'Supprime un plugin externe (remove nom · remove all)', ...OWN }, async (m, match) => {
+bot({ name: 'remove', desc: 'Supprime un plugin externe (remove nom · remove all)', ...PLATFORM }, async (m, match) => {
   if (!match) return m.reply('> Exemple :\n- remove <nom du plugin>\n- remove all')
   const l = list()
   const gone = match === 'all' ? l : l.filter((f) => f === `${match}.js`)
